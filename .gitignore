@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# Ignore all
+/*
+/*/
+
+# Except
+!.gitignore
+!README.md
+!/Source/

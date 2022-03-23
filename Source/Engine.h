@@ -1,6 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <vector>
+
+#include "EngineSystem.h"
 
 class Engine
 {
@@ -9,14 +12,21 @@ public:
 	Engine();
 
 	void start();
+	void end();
 
 protected:
 
-	void engineLoop(float deltaTime);
+	void startEngineLoop();
+	void engineLoop();
+	void endEngineLoop();
+
+	void systemsTick(float deltaTime);
 
 private:
 
-	std::unique_ptr<class SystemInputHandler> systemInputHandler;
-	std::unique_ptr<class Game> game;
-	std::unique_ptr<class Graphics> graphics;
+	std::vector<std::unique_ptr<class IEngineSystem>> engineSystems;
+
+	bool playing = false;
+
+	
 };

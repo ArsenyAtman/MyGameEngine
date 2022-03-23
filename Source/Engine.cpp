@@ -2,38 +2,64 @@
 
 #include <chrono>
 
-#include "SystemInputHandler/SystemInputHandler.h"
-#include "Game/Game.h"
-#include "Graphics/Graphics.h"
+#include "GameSystem/GameSystem.h"
+#include "GraphicsSystem/GraphicsSystem.h"
 
 Engine::Engine()
 {
-	systemInputHandler = std::unique_ptr<SystemInputHandler>(new SystemInputHandler());
-	game = std::unique_ptr<Game>(new Game());
-	graphics = std::unique_ptr<Graphics>(new Graphics());
+	engineSystems.push_back(std::make_unique<GameSystem>());
+	engineSystems.push_back(std::make_unique<GraphicsSystem>());
 }
 
 void Engine::start()
 {
+	startEngineLoop();
+}
+
+void Engine::end()
+{
+	endEngineLoop();
+}
+
+void Engine::startEngineLoop()
+{
+	playing = true;
+
+	for (auto& system : engineSystems)
+	{
+		system->initialize(this);
+	}
+
+	engineLoop();
+}
+
+void Engine::engineLoop()
+{
 	using Clock = std::chrono::system_clock;
-	using TickDuration = std::chrono::duration<float>;
 	using TimePoint = std::chrono::time_point<Clock>;
+	using TickDuration = std::chrono::duration<float>;
 
 	TickDuration tickDuration = TickDuration();
 
-	while (true)
+	while (playing)
 	{
 		TimePoint tickStart = Clock::now();
-		engineLoop(tickDuration.count());
+		systemsTick(tickDuration.count());
 		TimePoint tickEnd = Clock::now();
 
 		tickDuration = tickEnd - tickStart;
 	}
 }
 
-void Engine::engineLoop(float deltaTime)
+void Engine::endEngineLoop()
 {
-	systemInputHandler->inputTick(deltaTime);
-	game->gameTick(deltaTime);
-	graphics->drawTick(deltaTime);
+	playing = false;
+}
+
+void Engine::systemsTick(float deltaTime)
+{
+	for (auto& system : engineSystems)
+	{
+		system->engineTick(deltaTime);
+	}
 }
